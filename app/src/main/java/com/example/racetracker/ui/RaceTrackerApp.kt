@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +67,37 @@ fun RaceTrackerApp() {
         RaceParticipant(name = "Player 2", progressIncrement = 2)
     }
     var raceInProgress by remember { mutableStateOf(false) }
+
+    /*To ensure that if the instances of playerOne or playerTwo are replaced with different instances,
+    *then LaunchedEffect() needs to cancel and relaunch the underlying coroutines, add the playerOne and
+    *playerTwo objects as key to the LaunchedEffect. Similar to how a Text() composable gets recomposed
+    *when its text value changes, if any of the key arguments of the LaunchedEffect() changes, the underlying
+    *coroutine is canceled and relaunched.
+    */
+
+    if (raceInProgress){
+        /*
+        *To call suspend functions safely from inside a composable, you need to use the
+        *LaunchedEffect() composable. LaunchedEffect() composable runs the provided
+        *suspending function for as long as it remains in the composition. You can use
+        *the LaunchedEffect() composable function to accomplish all of the following:
+        *
+        *The LaunchedEffect() composable allows you to safely call suspend functions from composables.
+        *
+        *When the LaunchedEffect() function enters the Composition, it launches a coroutine with the code
+        *block passed as a parameter. It runs the provided suspend function as long as it remains
+        * in the composition. When a user clicks the Start button in the RaceTracker app, the
+        *LaunchedEffect() enters the composition and launches a coroutine to update progress.
+        *
+        *The coroutine is canceled when the LaunchedEffect() exits the composition. In the app, if the user clicks the Reset/Pause button, LaunchedEffect() is removed from the composition and the underlying coroutines are canceled.
+        */
+        LaunchedEffect(playerOne,playerTwo){
+            playerOne.run()
+            playerTwo.run()
+            raceInProgress=false
+        }
+    }
+
 
     RaceTrackerScreen(
         playerOne = playerOne,
