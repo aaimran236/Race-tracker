@@ -52,6 +52,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.racetracker.R
 import com.example.racetracker.ui.theme.RaceTrackerTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun RaceTrackerApp() {
@@ -75,7 +77,7 @@ fun RaceTrackerApp() {
     *coroutine is canceled and relaunched.
     */
 
-    if (raceInProgress){
+    if (raceInProgress) {
         /*
         *To call suspend functions safely from inside a composable, you need to use the
         *LaunchedEffect() composable. LaunchedEffect() composable runs the provided
@@ -89,12 +91,17 @@ fun RaceTrackerApp() {
         * in the composition. When a user clicks the Start button in the RaceTracker app, the
         *LaunchedEffect() enters the composition and launches a coroutine to update progress.
         *
-        *The coroutine is canceled when the LaunchedEffect() exits the composition. In the app, if the user clicks the Reset/Pause button, LaunchedEffect() is removed from the composition and the underlying coroutines are canceled.
+        *The coroutine is canceled when the LaunchedEffect() exits the composition. In the app,
+        * if the user clicks the Reset/Pause button, LaunchedEffect() is removed from the
+        * composition and the underlying coroutines are canceled.
         */
-        LaunchedEffect(playerOne,playerTwo){
-            playerOne.run()
-            playerTwo.run()
-            raceInProgress=false
+        LaunchedEffect(playerOne, playerTwo) {
+
+            coroutineScope {
+                launch { playerOne.run() }
+                launch { playerTwo.run() }
+            }
+            raceInProgress = false
         }
     }
 
