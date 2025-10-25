@@ -97,6 +97,13 @@ fun RaceTrackerApp() {
         */
         LaunchedEffect(playerOne, playerTwo) {
 
+            /*The coroutineScope suspend function creates a CoroutineScope and calls the specified
+             *suspend block with the current scope. The scope inherits its coroutineContext from
+             *the LaunchedEffect() scope.The scope returns as soon as the given block and all its
+             *children coroutines are complete. For the RaceTracker app, it returns once both
+             *participant objects finish executing the run() function.
+             */
+
             coroutineScope {
                 launch { playerOne.run() }
                 launch { playerTwo.run() }

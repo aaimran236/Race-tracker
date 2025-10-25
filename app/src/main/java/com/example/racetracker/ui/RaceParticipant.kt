@@ -15,10 +15,28 @@
  */
 package com.example.racetracker.ui
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import kotlin.coroutines.cancellation.CancellationException
+
+/**
+ * An interface for logging to decouple logic from the Android framework.
+ */
+interface AppLogger {
+    fun e(tag: String, message: String)
+}
+
+/**
+ * The production implementation of AppLogger that uses the real Android Log.
+ */
+object AndroidAppLogger : AppLogger {
+    override fun e(tag: String, message: String) {
+        Log.e(tag, message)
+    }
+}
 
 /**
  * This class represents a state holder for race participant.
@@ -28,7 +46,8 @@ class RaceParticipant(
     val maxProgress: Int = 100,
     val progressDelayMillis: Long = 500L,
     private val progressIncrement: Int = 1,
-    private val initialProgress: Int = 0
+    private val initialProgress: Int = 0,
+    private val logger: AppLogger = AndroidAppLogger
 ) {
     init {
         require(maxProgress > 0) { "maxProgress=$maxProgress; must be > 0" }
@@ -41,10 +60,20 @@ class RaceParticipant(
     var currentProgress by mutableStateOf(initialProgress)
         private set
 
+    /*
+     * Simulates the race by repeatedly incrementing the
+     * current progress after a specific delay, continuing
+     * until the maximum progress is reached.
+     */
     suspend fun run(){
-        while (currentProgress<maxProgress){
-            currentProgress+=progressIncrement
-            delay(progressDelayMillis)
+        try {
+            while (currentProgress < maxProgress) {
+                delay(progressDelayMillis)
+                currentProgress += progressIncrement
+            }
+        } catch (e: CancellationException) {
+            logger.e("RaceParticipant", "$name: ${e.message}")
+            throw e // Always re-throw CancellationException.
         }
     }
 
