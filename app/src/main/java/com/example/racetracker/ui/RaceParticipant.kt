@@ -25,18 +25,18 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * An interface for logging to decouple logic from the Android framework.
  */
-interface AppLogger {
-    fun e(tag: String, message: String)
-}
-
-/**
- * The production implementation of AppLogger that uses the real Android Log.
- */
-object AndroidAppLogger : AppLogger {
-    override fun e(tag: String, message: String) {
-        Log.e(tag, message)
-    }
-}
+//interface AppLogger {
+//    fun e(tag: String, message: String)
+//}
+//
+///**
+// * The production implementation of AppLogger that uses the real Android Log.
+// */
+//object AndroidAppLogger : AppLogger {
+//    override fun e(tag: String, message: String) {
+//        Log.e(tag, message)
+//    }
+//}
 
 /**
  * This class represents a state holder for race participant.
@@ -47,7 +47,7 @@ class RaceParticipant(
     val progressDelayMillis: Long = 500L,
     private val progressIncrement: Int = 1,
     private val initialProgress: Int = 0,
-    private val logger: AppLogger = AndroidAppLogger
+    ///private val logger: AppLogger = AndroidAppLogger
 ) {
     init {
         require(maxProgress > 0) { "maxProgress=$maxProgress; must be > 0" }
@@ -66,15 +66,15 @@ class RaceParticipant(
      * until the maximum progress is reached.
      */
     suspend fun run(){
-        try {
+        ///try {
             while (currentProgress < maxProgress) {
                 delay(progressDelayMillis)
                 currentProgress += progressIncrement
             }
-        } catch (e: CancellationException) {
-            logger.e("RaceParticipant", "$name: ${e.message}")
-            throw e // Always re-throw CancellationException.
-        }
+//        } catch (e: CancellationException) {
+//            logger.e("RaceParticipant", "$name: ${e.message}")
+//            throw e // Always re-throw CancellationException.
+//        }
     }
 
     /**

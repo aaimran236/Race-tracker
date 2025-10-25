@@ -15,10 +15,11 @@
  */
 package com.example.racetracker
 
-import com.example.racetracker.ui.AppLogger
+
 import com.example.racetracker.ui.RaceParticipant
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -28,12 +29,12 @@ import org.junit.Test
 class RaceParticipantTest {
 
     // A logger for tests that does nothing.
-    class NoOpLogger : AppLogger {
-        override fun e(tag: String, message: String) {
-            // This method is empty, so it does nothing when called.
-            // The test can run without crashing.
-        }
-    }
+//    class NoOpLogger : AppLogger {
+//        override fun e(tag: String, message: String) {
+//            // This method is empty, so it does nothing when called.
+//            // The test can run without crashing.
+//        }
+//    }
 
     private val raceParticipant = RaceParticipant(
         name = "Test",
@@ -41,7 +42,7 @@ class RaceParticipantTest {
         progressDelayMillis = 500L,
         initialProgress = 0,
         progressIncrement = 1,
-        logger = NoOpLogger()
+        ///logger = NoOpLogger()
     )
 
     /*
@@ -87,17 +88,43 @@ class RaceParticipantTest {
 
     ///Error Path
     @Test
-    fun raceParticipant_RaceStartedAndForcedToStop_ProgressNotUpdated() = runTest {
-        val expectedProgress = 0
+    fun raceParticipant_RacePaused_ProgressUpdated() = runTest {
+        val expectedProgress = 5
         val job = launch {
             raceParticipant.run()
         }
-        advanceTimeBy(250L)
-        job.cancel()
+        advanceTimeBy(expectedProgress*raceParticipant.progressDelayMillis)
+        runCurrent()
+        job.cancelAndJoin()
 
         assertEquals(expectedProgress,raceParticipant.currentProgress)
     }
 
+    @Test
+    fun raceParticipant_RacePausedAndResumed_ProgressUpdated() = runTest {
+        val expectedProgress = 5
+
+        repeat(2){
+            val job = launch {
+                raceParticipant.run()
+            }
+            advanceTimeBy(expectedProgress*raceParticipant.progressDelayMillis)
+            runCurrent()
+            job.cancelAndJoin()
+        }
+
+        assertEquals(expectedProgress*2,raceParticipant.currentProgress)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun raceParticipant_ProgressIncrementZero_ExceptionThrown(){
+        RaceParticipant(name = "Progress Test", progressIncrement = 0)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun raceParticipant_MaxProgressZero_ExceptionThrown(){
+        RaceParticipant(name = "Progress Test", maxProgress = 0)
+    }
 
     ///Boundary Case
     @Test
@@ -107,4 +134,6 @@ class RaceParticipantTest {
         runCurrent()
         assertEquals(100,raceParticipant.currentProgress)
     }
+
+
 }

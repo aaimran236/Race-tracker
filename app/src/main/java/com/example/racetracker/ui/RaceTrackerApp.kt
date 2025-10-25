@@ -104,6 +104,12 @@ fun RaceTrackerApp() {
              *participant objects finish executing the run() function.
              */
 
+            /*
+             *The coroutineScope block only returns and moves on after all the code inside the block
+             *  completes execution. For the code outside of the block, the presence or absence of
+             *  concurrency becomes a mere implementation detail. This coding style provides a
+             * structured approach to concurrent programming and is referred to as structured concurrency.
+             */
             coroutineScope {
                 launch { playerOne.run() }
                 launch { playerTwo.run() }
